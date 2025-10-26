@@ -6,7 +6,6 @@ import org.hibernate.cfg.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 public class HibernateUtil {
     private static final Logger logger = LoggerFactory.getLogger(HibernateUtil.class);
     private static final SessionFactory sessionFactory = buildSessionFactory();
@@ -15,6 +14,7 @@ public class HibernateUtil {
         try {
             Configuration cfg = new Configuration();
             cfg.configure("hibernate.cfg.xml");
+
             return cfg.buildSessionFactory();
         } catch (HibernateException e) {
             logger.error("Ошибка при создании SessionFactory: ", e);
