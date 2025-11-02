@@ -3,6 +3,7 @@ package homework.second.dao;
 import homework.second.model.UserEntity;
 import homework.second.util.HibernateUtil;
 import org.hibernate.HibernateException;
+import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.hibernate.Session;
 import org.slf4j.Logger;
@@ -13,11 +14,21 @@ import java.util.List;
 public class UserPostgrsDao implements UserDao {
     private static final Logger logger = LoggerFactory.getLogger(UserPostgrsDao.class);
 
+    private final SessionFactory sessionFactory;
+
+    public UserPostgrsDao(){
+        this(HibernateUtil.getSessionFactory());
+    }
+
+    public UserPostgrsDao(SessionFactory sessionFactory) {
+        this.sessionFactory = sessionFactory;
+    }
+
     @Override
     public UserEntity create(UserEntity userEntity) {
         Transaction transaction = null;
 
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.persist(userEntity);
             transaction.commit();
@@ -35,7 +46,7 @@ public class UserPostgrsDao implements UserDao {
 
     @Override
     public UserEntity findById(Long id) {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.openSession()) {
             return session.find(UserEntity.class, id);
         } catch (HibernateException e) {
             logger.error("Ошибка при поиске пользователя по id", e);
@@ -45,7 +56,7 @@ public class UserPostgrsDao implements UserDao {
 
     @Override
     public List<UserEntity> findAll() {
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.openSession()) {
             return session.createQuery("from User", UserEntity.class).list();
         } catch (HibernateException e) {
             logger.error("Ошибка при получении списка пользователей", e);
@@ -56,7 +67,7 @@ public class UserPostgrsDao implements UserDao {
     @Override
     public UserEntity update(UserEntity userEntity) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.openSession()) {
             transaction = session.beginTransaction();
             session.merge(userEntity);
             transaction.commit();
@@ -75,7 +86,7 @@ public class UserPostgrsDao implements UserDao {
     @Override
     public boolean delete(Long id) {
         Transaction transaction = null;
-        try (Session session = HibernateUtil.getSessionFactory().openSession()) {
+        try (Session session = sessionFactory.openSession()) {
             UserEntity userEntity = session.find(UserEntity.class, id);
             if (userEntity == null) {
                 return false;
