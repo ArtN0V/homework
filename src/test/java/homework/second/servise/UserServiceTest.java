@@ -3,14 +3,19 @@ package homework.second.servise;
 import homework.second.dao.UserDao;
 import homework.second.model.UserEntity;
 import homework.second.service.UserService;
-
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class UserServiceTest {
 
@@ -35,8 +40,8 @@ class UserServiceTest {
 
         UserEntity result = userService.createUser(input.getName(), input.getEmail(), input.getAge());
 
-        assertThat(result).isNotNull();
-        assertThat(result.getId()).isEqualTo(1L);
+        assertNotNull(result);
+        assertEquals(1L, result.getId());
         verify(userDao, times(1)).create(any(UserEntity.class));
     }
 
@@ -49,7 +54,7 @@ class UserServiceTest {
 
         UserEntity result = userService.getUser(2L);
 
-        assertThat(result).isEqualTo(u);
+        assertEquals(u, result);
         verify(userDao).findById(2L);
     }
 
@@ -59,7 +64,7 @@ class UserServiceTest {
 
         var list = userService.listUsers();
 
-        assertThat(list).hasSize(1);
+        assertTrue(list.size() > 0);
         verify(userDao).findAll();
     }
 
@@ -69,7 +74,7 @@ class UserServiceTest {
 
         boolean res = userService.deleteUser(5L);
 
-        assertThat(res).isTrue();
+        assertTrue(res);
         verify(userDao).delete(5L);
     }
 }

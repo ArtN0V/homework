@@ -42,7 +42,7 @@ public class UserEntity {
         createdAt = LocalDateTime.now();
     }
 
-    public Long getId() {
+    public long getId() {
         return id;
     }
 
