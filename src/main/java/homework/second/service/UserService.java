@@ -1,45 +1,77 @@
 package homework.second.service;
 
-import homework.second.dao.UserDao;
+import homework.second.dto.UserDto;
+import homework.second.exeption.NotFoundException;
+import homework.second.mapper.UserMapper;
 import homework.second.model.UserEntity;
+import homework.second.repository.UserRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+@Service
+@Transactional
 public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
-    private final UserDao dao;
+    private final UserRepository repository;
 
-    public UserService(UserDao dao) {
-        this.dao = dao;
+    public UserService(UserRepository repository) {
+        this.repository = repository;
     }
 
-    public UserEntity createUser(String name, String email, Integer age) {
-        UserEntity userEntity = new UserEntity(name, email, age);
+    /** Создание нового пользователя */
+    public UserDto createUser(UserDto dto) {
+        repository.findByEmail(dto.getEmail()).ifPresent(u -> {
+            throw new IllegalArgumentException("User with this email already exists");
+        });
 
-        return dao.create(userEntity);
+        UserEntity entity = UserMapper.toEntity(dto);
+        UserEntity saved = repository.save(entity);
+        logger.info("Created user with id {}", saved.getId());
+
+        return UserMapper.toDto(saved);
     }
 
-    public UserEntity getUser(Long id) {
-        return dao.findById(id);
+    /** Получение пользователя по ID */
+    @Transactional(readOnly = true)
+    public UserDto getUser(Long id) {
+        UserEntity entity = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found with id " + id));
+
+        return UserMapper.toDto(entity);
     }
 
-    public List<UserEntity> listUsers() {
-        return dao.findAll();
+    /** Получение всех пользователей */
+    @Transactional(readOnly = true)
+    public List<UserDto> listUsers() {
+        return repository.findAll().stream()
+                .map(UserMapper::toDto)
+                .collect(Collectors.toList());
     }
 
-    public UserEntity updateUser(Long id, String name, String email, Integer age) {
-        UserEntity userEntity = dao.findById(id);
-        if (userEntity == null) return null;
-        if (name != null && !name.isBlank()) userEntity.setName(name);
-        if (email != null && !email.isBlank()) userEntity.setEmail(email);
-        if (age != null) userEntity.setAge(age);
+    /** Обновление пользователя */
+    public UserDto updateUser(Long id, UserDto dto) {
+        UserEntity entity = repository.findById(id)
+                .orElseThrow(() -> new NotFoundException("User not found with id " + id));
+        UserMapper.updateEntity(entity, dto);
+        UserEntity updated = repository.save(entity);
 
-        return dao.update(userEntity);
+        logger.info("Updated user with id {}", updated.getId());
+
+        return UserMapper.toDto(updated);
     }
 
-    public boolean deleteUser(Long id) {
-        return dao.delete(id);
+    /** Удаление пользователя */
+    public void deleteUser(Long id) {
+        if (!repository.existsById(id)) {
+            throw new NotFoundException("User not found with id " + id);
+        }
+        repository.deleteById(id);
+
+        logger.info("Deleted user with id {}", id);
     }
 }
