@@ -17,8 +17,10 @@ import java.net.URI;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/users")
+@RequestMapping(UserController.URI_API_USERS)
 public class UserController {
+    public static final String URI_API_USERS = "/api/users";
+
     private final UserService service;
 
     public UserController(UserService service) {
@@ -48,7 +50,7 @@ public class UserController {
             return ResponseEntity.status(201).body(created);
         }
 
-        return ResponseEntity.created(URI.create("/api/users/" + created.getId()))
+        return ResponseEntity.created(URI.create(URI_API_USERS + created.getId()))
                 .body(created);
     }
 

@@ -1,60 +1,58 @@
-package homework.second.serviсe;
+package homework.second.service;
 
 import homework.second.dto.UserDto;
+import homework.second.mapper.UserMapper;
 import homework.second.model.UserEntity;
 import homework.second.repository.UserRepository;
-import homework.second.service.UserService;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+@ExtendWith(MockitoExtension.class)
 public class UserServiceTest {
 
     @Mock
-    private UserRepository repo;
+    private UserRepository repository;
 
     @InjectMocks
     private UserService service;
 
-    @BeforeEach
-    void init() {
-        MockitoAnnotations.openMocks(this);
-    }
-
     @Test
     void createUser_shouldSaveAndReturnDto() {
-        UserEntity entity = new UserEntity("Artem", "a@example.com", 21);
-        entity.setId(1L);
-        when(repo.save(any(UserEntity.class))).thenReturn(entity);
-
         UserDto dto = new UserDto();
-        dto.setId(1L);
         dto.setName("Artem");
         dto.setEmail("a@example.com");
         dto.setAge(21);
 
+        when(repository.findByEmail("a@example.com")).thenReturn(Optional.empty());
+
+        UserEntity saved = new UserEntity("Artem", "a@example.com", 21);
+        saved.setId(1L);
+        when(repository.save(UserMapper.entityFromDto(dto))).thenReturn(saved);
+
         UserDto result = service.createUser(dto);
 
-        assertEquals(result.getName(), "Artem");
-        verify(repo, times(1)).save(any(UserEntity.class));
+        assertEquals(1L, result.getId());
+        assertEquals("Artem", result.getName());
+        assertEquals("a@example.com", result.getEmail());
+        assertEquals(21, result.getAge());
     }
 
     @Test
     void getUser_shouldReturnDtoIfExists() {
         UserEntity entity = new UserEntity("User", "u@example.com", 20);
         entity.setId(1L);
-        when(repo.findById(1L)).thenReturn(Optional.of(entity));
+        when(repository.findById(1L)).thenReturn(Optional.of(entity));
 
         UserDto dto = service.getUser(1L);
 
@@ -63,7 +61,7 @@ public class UserServiceTest {
 
     @Test
     void getUser_shouldThrowIfNotFound() {
-        when(repo.findById(999L)).thenReturn(Optional.empty());
+        when(repository.findById(999L)).thenReturn(Optional.empty());
         assertThrows(RuntimeException.class, () -> service.getUser(999L));
     }
 }

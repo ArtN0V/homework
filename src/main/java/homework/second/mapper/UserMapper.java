@@ -6,7 +6,7 @@ import homework.second.model.UserEntity;
 public final class UserMapper {
     private UserMapper() {}
 
-    public static UserDto toDto(UserEntity user) {
+    public static UserDto dtoFromEntity(UserEntity user) {
         if (user == null) return null;
         UserDto dto = new UserDto();
         dto.setId(user.getId());
@@ -17,7 +17,7 @@ public final class UserMapper {
         return dto;
     }
 
-    public static UserEntity toEntity(UserDto dto) {
+    public static UserEntity entityFromDto(UserDto dto) {
         if (dto == null) return null;
         UserEntity user = new UserEntity();
         user.setName(dto.getName());
@@ -27,7 +27,7 @@ public final class UserMapper {
         return user;
     }
 
-    public static void updateEntity(UserEntity user, UserDto dto) {
+    public static void updateEntityFromDto(UserEntity user, UserDto dto) {
         if (dto == null || user == null) return;
         user.setName(dto.getName());
         user.setEmail(dto.getEmail());
