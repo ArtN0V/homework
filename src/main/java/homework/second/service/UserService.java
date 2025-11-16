@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 @Transactional
 public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
+
     private final UserRepository repository;
 
     public UserService(UserRepository repository) {
@@ -29,11 +30,11 @@ public class UserService {
             throw new IllegalArgumentException("User with this email already exists");
         });
 
-        UserEntity entity = UserMapper.toEntity(dto);
+        UserEntity entity = UserMapper.entityFromDto(dto);
         UserEntity saved = repository.save(entity);
         logger.info("Created user with id {}", saved.getId());
 
-        return UserMapper.toDto(saved);
+        return UserMapper.dtoFromEntity(saved);
     }
 
     /** Получение пользователя по ID */
@@ -42,14 +43,14 @@ public class UserService {
         UserEntity entity = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with id " + id));
 
-        return UserMapper.toDto(entity);
+        return UserMapper.dtoFromEntity(entity);
     }
 
     /** Получение всех пользователей */
     @Transactional(readOnly = true)
     public List<UserDto> listUsers() {
         return repository.findAll().stream()
-                .map(UserMapper::toDto)
+                .map(UserMapper::dtoFromEntity)
                 .collect(Collectors.toList());
     }
 
@@ -57,12 +58,12 @@ public class UserService {
     public UserDto updateUser(Long id, UserDto dto) {
         UserEntity entity = repository.findById(id)
                 .orElseThrow(() -> new NotFoundException("User not found with id " + id));
-        UserMapper.updateEntity(entity, dto);
+        UserMapper.updateEntityFromDto(entity, dto);
         UserEntity updated = repository.save(entity);
 
         logger.info("Updated user with id {}", updated.getId());
 
-        return UserMapper.toDto(updated);
+        return UserMapper.dtoFromEntity(updated);
     }
 
     /** Удаление пользователя */
@@ -74,4 +75,5 @@ public class UserService {
 
         logger.info("Deleted user with id {}", id);
     }
+
 }
