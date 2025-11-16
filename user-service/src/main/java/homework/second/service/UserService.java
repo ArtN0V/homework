@@ -2,6 +2,9 @@ package homework.second.service;
 
 import homework.second.dto.UserDto;
 import homework.second.exeption.NotFoundException;
+import homework.second.kafka.UserEvent;
+import homework.second.kafka.UserEventProducer;
+import homework.second.kafka.UserOperation;
 import homework.second.mapper.UserMapper;
 import homework.second.model.UserEntity;
 import homework.second.repository.UserRepository;
@@ -11,6 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -19,9 +23,11 @@ public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository repository;
+    private final UserEventProducer producer;
 
-    public UserService(UserRepository repository) {
+    public UserService(UserRepository repository, UserEventProducer producer) {
         this.repository = repository;
+        this.producer = producer;
     }
 
     /** Создание нового пользователя */
@@ -33,6 +39,8 @@ public class UserService {
         UserEntity entity = UserMapper.entityFromDto(dto);
         UserEntity saved = repository.save(entity);
         logger.info("Created user with id {}", saved.getId());
+
+        producer.publish(new UserEvent(UserOperation.CREATE, dto.getEmail(), dto.getId(), dto.getName()));
 
         return UserMapper.dtoFromEntity(saved);
     }
@@ -68,10 +76,13 @@ public class UserService {
 
     /** Удаление пользователя */
     public void deleteUser(Long id) {
-        if (!repository.existsById(id)) {
+        Optional<UserEntity> user = repository.findById(id);
+        if (user.isEmpty()) {
             throw new NotFoundException("User not found with id " + id);
         }
+
         repository.deleteById(id);
+        producer.publish(new UserEvent(UserOperation.CREATE, user.get().getEmail(), id, user.get().getName()));
 
         logger.info("Deleted user with id {}", id);
     }
