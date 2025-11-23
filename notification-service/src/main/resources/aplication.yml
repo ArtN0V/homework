@@ -1,0 +1,32 @@
+server:
+  port: 8081
+
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092
+    consumer:
+      group-id: notification-service-group
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring.json.trusted.packages: "*"
+
+  mail:
+    host: smtp.mailserver.example
+    port: 587
+    username: example_email_username
+    password: example_email_password
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls.enable: true
+
+mail:
+  from: example@domain.com
+
+logging:
+  level:
+    root: INFO
+    ru.example.notification: DEBUG
