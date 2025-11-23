@@ -21,22 +21,8 @@ public class NotificationController {
     }
 
     @PostMapping("/send")
-    public ResponseEntity<Void> sendManual(
-            @RequestParam @NotBlank @Email String email,
-            @RequestParam UserOperation operation // "CREATE" или "DELETE"
-    ) {
-        String subject;
-        String text;
-        if (operation == UserOperation.CREATE) {
-            subject = "Регистрация на сайте";
-            text = "Здравствуйте! Ваш аккаунт на сайте ваш сайт был успешно создан.";
-        } else if (operation == UserOperation.DELETE) {
-            subject = "Удаление аккаунта";
-            text = "Здравствуйте! Ваш аккаунт был удалён.";
-        } else {
-            return ResponseEntity.badRequest().build();
-        }
-        mailService.sendSimpleMessage(email, subject, text);
+    public ResponseEntity<Void> sendManual(@RequestParam @NotBlank @Email String email, @RequestParam UserOperation operation) {
+        mailService.sendUserOperationEmail(email, operation);
 
         return ResponseEntity.ok().build();
     }

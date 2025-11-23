@@ -6,7 +6,6 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class NotificationListener {
-
     private final MailService mailService;
 
     public NotificationListener(MailService mailService) {
@@ -20,14 +19,7 @@ public class NotificationListener {
         }
         String email = event.getEmail();
         UserOperation operation = event.getOperation();
-        if (operation == UserOperation.CREATE) {
-            String subject = "Регистрация на сайте";
-            String text = "Здравствуйте! Ваш аккаунт на сайте ваш сайт был успешно создан.";
-            mailService.sendSimpleMessage(email, subject, text);
-        } else if (operation == UserOperation.DELETE) {
-            String subject = "Удаление аккаунта";
-            String text = "Здравствуйте! Ваш аккаунт был удалён.";
-            mailService.sendSimpleMessage(email, subject, text);
-        }
+
+        mailService.sendUserOperationEmail(email, operation);
     }
 }

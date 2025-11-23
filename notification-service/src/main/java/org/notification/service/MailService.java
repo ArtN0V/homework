@@ -1,28 +1,23 @@
 package org.notification.service;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.stereotype.Service;
+import org.notification.kafka.UserOperation;
 
-@Service
-public class MailService {
+public interface MailService {
+    /**
+     * Отправляет простое текстовое письмо.
+     *
+     * @param to      адрес получателя
+     * @param subject тема письма
+     * @param text    текстовое содержимое письма
+     */
+    void sendSimpleMessage(String to, String subject, String text);
 
-    private final JavaMailSender mailSender;
-
-    @Value("${mail.from}")
-    private String fromAddress;
-
-    public MailService(JavaMailSender mailSender) {
-        this.mailSender = mailSender;
-    }
-
-    public void sendSimpleMessage(String to, String subject, String text) {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setFrom(fromAddress);
-        message.setTo(to);
-        message.setSubject(subject);
-        message.setText(text);
-        mailSender.send(message);
-    }
+    /**
+     * Отправляет уведомление, связанное с операцией над пользователем,
+     * например созданием или удалением учётной записи.
+     *
+     * @param email     адрес получателя
+     * @param operation тип выполняемой операции над пользователем
+     */
+    void sendUserOperationEmail(String email, UserOperation operation);
 }
