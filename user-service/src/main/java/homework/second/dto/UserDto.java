@@ -1,22 +1,29 @@
 package homework.second.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import org.springframework.hateoas.RepresentationModel;
 
 /**
  * DTO для передачи данных о пользователе в API.
  */
-public class UserDto {
+@Schema(description = "DTO пользователя")
+public class UserDto extends RepresentationModel<UserDto> {
 
+    @Schema(description = "Уникальный идентификатор", example = "1")
     private Long id;
 
+    @Schema(description = "Имя пользователя", example = "Jack")
     @NotBlank(message = "name must not be blank")
     private String name;
 
+    @Schema(description = "Email пользователя", example = "jack@example.com")
     @NotBlank(message = "email must not be blank")
     @Email(message = "email must be valid")
     private String email;
 
+    @Schema(description = "Возраст пользователя", example = "40")
     private Integer age;
 
     public UserDto() {}

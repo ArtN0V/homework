@@ -1,6 +1,7 @@
 package homework.second.service;
 
 import homework.second.dto.UserDto;
+import homework.second.kafka.UserEventProducer;
 import homework.second.mapper.UserMapper;
 import homework.second.model.UserEntity;
 import homework.second.repository.UserRepository;
@@ -23,6 +24,8 @@ public class UserServiceTest {
 
     @Mock
     private UserRepository repository;
+    @Mock
+    private UserEventProducer producer;
 
     @InjectMocks
     private UserService service;
