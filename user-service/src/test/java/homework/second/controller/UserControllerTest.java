@@ -2,13 +2,16 @@ package homework.second.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import homework.second.dto.UserDto;
+import homework.second.kafka.UserEventProducer;
 import homework.second.model.UserEntity;
 import homework.second.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -45,6 +48,9 @@ public class UserControllerTest {
 
     @Autowired
     private UserRepository userRepository;
+
+    @MockBean
+    private UserEventProducer producer;
 
     @BeforeEach
     void setUp() {
