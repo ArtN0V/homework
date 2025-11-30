@@ -5,6 +5,7 @@ import homework.second.hateoas.UserModelAssembler;
 import homework.second.service.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
@@ -35,17 +36,28 @@ public class UserController {
         this.assembler = assembler;
     }
 
-    @Operation(summary = "Получить всех пользователей")
+    @Operation(
+            summary = "Получить всех пользователей",
+            description = "Возвращает список всех пользователей в системе"
+    )
+    @ApiResponse(responseCode = "200", description = "Список пользователей успешно получен")
     @GetMapping
     public ResponseEntity<List<UserDto>> getAll() {
         List<UserDto> list = service.listUsers()
                 .stream()
                 .map(assembler::toModel)
                 .toList();
-        return ResponseEntity.ok(service.listUsers());
+        return ResponseEntity.ok(list);
     }
 
-    @Operation(summary = "Получить пользователя по ID")
+    @Operation(
+            summary = "Получить пользователя по ID",
+            description = "Возвращает пользователя по его идентификатору, если он существует"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Пользователь найден"),
+            @ApiResponse(responseCode = "404", description = "Пользователь не найден")
+    })
     @GetMapping("/{id}")
     public ResponseEntity<UserDto> getById(@PathVariable Long id) {
         UserDto dto = service.getUser(id);
@@ -56,8 +68,14 @@ public class UserController {
         return ResponseEntity.ok(assembler.toModel(dto));
     }
 
-    @Operation(summary = "Создать пользователя", description = "Создаёт пользователя и возвращает DTO с ссылками (HATEOAS)")
-    @ApiResponse(responseCode = "201", description = "Создан")
+    @Operation(
+            summary = "Создать пользователя",
+            description = "Создаёт нового пользователя и возвращает его DTO с HATEOAS-ссылками"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Пользователь успешно создан"),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные запроса")
+    })
     @PostMapping
     public ResponseEntity<UserDto> create(@Valid @RequestBody UserDto dto) {
         UserDto created = service.createUser(dto);
@@ -66,7 +84,14 @@ public class UserController {
                 .body(assembler.toModel(created));
     }
 
-    @Operation(summary = "Обновить пользователя по ID")
+    @Operation(
+            summary = "Обновить пользователя по ID",
+            description = "Обновляет данные существующего пользователя"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "200", description = "Пользователь успешно обновлён"),
+            @ApiResponse(responseCode = "400", description = "Некорректные данные или пользователь не найден"),
+    })
     @PutMapping("/{id}")
     public ResponseEntity<UserDto> update(@PathVariable Long id, @Valid @RequestBody UserDto dto) {
         UserDto updated = service.updateUser(id, dto);
@@ -77,7 +102,14 @@ public class UserController {
         return ResponseEntity.ok(assembler.toModel(updated));
     }
 
-    @Operation(summary = "Удалить пользователя")
+    @Operation(
+            summary = "Удалить пользователя",
+            description = "Удаляет пользователя по его идентификатору"
+    )
+    @ApiResponses({
+            @ApiResponse(responseCode = "204", description = "Пользователь успешно удалён"),
+            @ApiResponse(responseCode = "404", description = "Пользователь не найден")
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable Long id) {
         service.deleteUser(id);
