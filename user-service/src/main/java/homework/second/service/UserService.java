@@ -7,7 +7,9 @@ import homework.second.kafka.UserEventProducer;
 import homework.second.kafka.UserOperation;
 import homework.second.mapper.UserMapper;
 import homework.second.model.UserEntity;
+import homework.second.notification.NotificationClient;
 import homework.second.repository.UserRepository;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -24,10 +26,12 @@ public class UserService {
 
     private final UserRepository repository;
     private final UserEventProducer producer;
+    private final NotificationClient notificationClient;
 
-    public UserService(UserRepository repository, UserEventProducer producer) {
+    public UserService(UserRepository repository, UserEventProducer producer, NotificationClient notificationClient) {
         this.repository = repository;
         this.producer = producer;
+        this.notificationClient = notificationClient;
     }
 
     /** Создание нового пользователя */
@@ -41,6 +45,9 @@ public class UserService {
         logger.info("Created user with id {}", saved.getId());
 
         producer.publish(new UserEvent(UserOperation.CREATE, dto.getEmail(), dto.getId(), dto.getName()));
+
+        // Отправка уведомления через external service с Circuit Breaker
+        sendNotificationWithCircuitBreaker(dto);
 
         return UserMapper.dtoFromEntity(saved);
     }
@@ -84,7 +91,18 @@ public class UserService {
         repository.deleteById(id);
         producer.publish(new UserEvent(UserOperation.CREATE, user.get().getEmail(), id, user.get().getName()));
 
+        sendNotificationWithCircuitBreaker(UserMapper.dtoFromEntity(user.get()));
+
         logger.info("Deleted user with id {}", id);
+    }
+
+    @CircuitBreaker(name = "notificationServiceCircuitBreaker", fallbackMethod = "notificationFallback")
+    public void sendNotificationWithCircuitBreaker(UserDto user) {
+        notificationClient.sendNotification(user);
+    }
+
+    public void notificationFallback(UserDto user, Throwable t) {
+        logger.warn("Notification service is unavailable for user {}: {}", user.getEmail(), t.toString());
     }
 
 }
