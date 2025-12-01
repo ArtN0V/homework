@@ -1,8 +1,8 @@
 package org.notification.service;
 
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import org.notification.kafka.UserOperation;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
@@ -33,6 +33,7 @@ public class JMSMailService implements MailService {
     }
 
     @Override
+    @CircuitBreaker(name = "mailServiceCircuitBreaker", fallbackMethod = "fallbackSendUserOperationEmail")
     public void sendUserOperationEmail(String email, UserOperation operation) {
         String subject;
         String text;
@@ -50,5 +51,10 @@ public class JMSMailService implements MailService {
         }
 
         sendSimpleMessage(email, subject, text);
+    }
+
+    // fallback при недоступности SMTP
+    public void fallbackSendUserOperationEmail(String email, UserOperation operation, Throwable t) {
+        System.err.println("Fallback: unable to send email to " + email + ". Error: " + t.getMessage());
     }
 }

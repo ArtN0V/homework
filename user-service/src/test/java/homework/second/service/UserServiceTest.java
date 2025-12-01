@@ -4,6 +4,7 @@ import homework.second.dto.UserDto;
 import homework.second.kafka.UserEventProducer;
 import homework.second.mapper.UserMapper;
 import homework.second.model.UserEntity;
+import homework.second.notification.NotificationClient;
 import homework.second.repository.UserRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,6 +27,8 @@ public class UserServiceTest {
     private UserRepository repository;
     @Mock
     private UserEventProducer producer;
+    @Mock
+    private NotificationClient notificationClient;
 
     @InjectMocks
     private UserService service;
