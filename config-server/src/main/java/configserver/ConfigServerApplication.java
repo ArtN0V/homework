@@ -1,8 +1,12 @@
+package configserver;
+
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.config.server.EnableConfigServer;
 
-@SpringBootApplication
+@SpringBootApplication(exclude = {
+        org.springframework.boot.autoconfigure.r2dbc.R2dbcAutoConfiguration.class
+})
 @EnableConfigServer
 public class ConfigServerApplication {
     public static void main(String[] args) {
