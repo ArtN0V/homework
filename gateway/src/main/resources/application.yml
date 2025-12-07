@@ -8,7 +8,7 @@ spring:
       routes:
         - id: user
           uri: lb://user-service
-          predicates:
+          predicatцes:
             - Path=/user/**
         - id: notification
           uri: lb://notification-service
